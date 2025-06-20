@@ -8,7 +8,7 @@
 
 ![Version](https://img.shields.io/badge/Version-1.0.0-green)
 
- ![License](https://img.shields.io/badge/License-© 2025 Chezcakeishere-orange)
+![License](https://img.shields.io/badge/License-© 2025 Chezcakeishere-orange)
 
 ## 🚀 Overview
 
