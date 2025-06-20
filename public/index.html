@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LRS - Loader Resource Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'spin-slow': 'spin 2s linear infinite',
+                        'spin-fast': 'spin 0.5s linear infinite',
+                        'pulse-slow': 'pulse 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes ring {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes dots {
+            0%, 20% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @keyframes wave {
+            0%, 40%, 100% { transform: scaleY(0.4); }
+            20% { transform: scaleY(1.0); }
+        }
+        @keyframes slide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        @keyframes flip {
+            0%, 50% { transform: rotateY(0deg); }
+            100% { transform: rotateY(180deg); }
+        }
+        @keyframes chase {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes spiral {
+            0% { transform: rotate(0deg) scale(0); }
+            50% { transform: rotate(180deg) scale(1); }
+            100% { transform: rotate(360deg) scale(0); }
+        }
+        @keyframes orbit {
+            0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+        }
+        @keyframes morph {
+            0%, 100% { border-radius: 50%; }
+            25% { border-radius: 0%; }
+            50% { border-radius: 50% 0%; }
+            75% { border-radius: 0% 50%; }
+        }
+        @keyframes matrix {
+            0% { transform: matrix(1,0,0,1,0,0); }
+            25% { transform: matrix(0.7,0.7,-0.7,0.7,0,0); }
+            50% { transform: matrix(0,1,-1,0,0,0); }
+            75% { transform: matrix(-0.7,0.7,-0.7,-0.7,0,0); }
+            100% { transform: matrix(1,0,0,1,0,0); }
+        }
+        
+        .loader-1 { animation: ring 1s linear infinite; }
+        .loader-2 { animation: dots 1.4s ease-in-out infinite; }
+        .loader-3 { animation: wave 1.2s linear infinite; }
+        .loader-4 { animation: slide 2s ease-in-out infinite; }
+        .loader-5 { animation: flip 1.6s ease-in-out infinite; }
+        .loader-6 { animation: chase 1s linear infinite; }
+        .loader-7 { animation: spiral 2s ease-in-out infinite; }
+        .loader-8 { animation: orbit 2s linear infinite; }
+        .loader-9 { animation: morph 2s ease-in-out infinite; }
+        .loader-10 { animation: matrix 3s linear infinite; }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-900 dark:bg-white rounded-full flex items-center justify-center">
+                            <span class="text-white dark:text-gray-900 font-bold text-sm">LRS</span>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold">Loader Resource Studio</h1>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">100+ Modern Loaders for Web & Java under the MIT license</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="themeToggle" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <span class="dark:hidden">🌙</span>
+                            <span class="hidden dark:inline">☀️</span>
+                        </button>
+                        <button id="addLoader" class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
+                            Add Loader
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Controls -->
+        <div class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Size</label>
+                        <input type="range" id="sizeControl" min="20" max="100" value="40" class="w-full">
+                        <span id="sizeValue" class="text-sm text-gray-600 dark:text-gray-400">40px</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Speed</label>
+                        <input type="range" id="speedControl" min="0.5" max="3" step="0.1" value="1" class="w-full">
+                        <span id="speedValue" class="text-sm text-gray-600 dark:text-gray-400">1x</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Color</label>
+                        <select id="colorControl" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-base">
+                            <option value="gray-900">Black</option>
+                            <option value="gray-600">Gray</option>
+                            <option value="white">White</option>
+                            <option value="gray-400">Light Gray</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Filter</label>
+                        <select id="filterControl" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-base">
+                            <option value="">All Loaders</option>
+                            <option value="spin">Spinning</option>
+                            <option value="pulse">Pulsing</option>
+                            <option value="bounce">Bouncing</option>
+                            <option value="slide">Sliding</option>
+                            <option value="morph">Morphing</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Loader Grid -->
+            <div id="loaderGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6 mb-8">
+                <!-- Loaders will be generated here -->
+            </div>
+
+            <!-- Selected Loader Preview -->
+            <div id="previewSection" class="hidden bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold mb-4">Loader Preview & Code</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium mb-2">Preview</h4>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-8 flex items-center justify-center min-h-[200px]">
+                            <div id="selectedLoader"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex space-x-2 mb-2">
+                            <button class="code-tab px-4 py-2 text-sm font-medium border-b-2 border-gray-900 dark:border-white" data-tab="html">HTML/CSS</button>
+                            <button class="code-tab px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:border-gray-300" data-tab="react">React</button>
+                            <button class="code-tab px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:border-gray-300" data-tab="java">Java</button>
+                        </div>
+                        <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-auto max-h-80">
+                            <pre id="codeOutput"></pre>
+                        </div>
+                        <button id="copyCode" class="mt-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors text-sm">
+                            Copy Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme management
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            html.classList.add('dark');
+        }
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        });
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+        });
+
+        // Loader configurations
+        const loaderConfigs = [
+            // Spinning Loaders
+            { id: 1, name: 'Ring Spinner', type: 'spin', html: '<div class="loader-ring"></div>' },
+            { id: 2, name: 'Dashed Ring', type: 'spin', html: '<div class="loader-dashed-ring"></div>' },
+            { id: 3, name: 'Half Ring', type: 'spin', html: '<div class="loader-half-ring"></div>' },
+            { id: 4, name: 'Double Ring', type: 'spin', html: '<div class="loader-double-ring"></div>' },
+            { id: 5, name: 'Triple Ring', type: 'spin', html: '<div class="loader-triple-ring"></div>' },
+            { id: 6, name: 'Gear Spinner', type: 'spin', html: '<div class="loader-gear"></div>' },
+            { id: 7, name: 'Clock Spinner', type: 'spin', html: '<div class="loader-clock"></div>' },
+            { id: 8, name: 'Propeller', type: 'spin', html: '<div class="loader-propeller"></div>' },
+            { id: 9, name: 'Cross Spinner', type: 'spin', html: '<div class="loader-cross"></div>' },
+            { id: 10, name: 'Star Spinner', type: 'spin', html: '<div class="loader-star"></div>' },
+            
+            // Pulsing Loaders
+            { id: 11, name: 'Pulse Dot', type: 'pulse', html: '<div class="loader-pulse-dot"></div>' },
+            { id: 12, name: 'Pulse Ring', type: 'pulse', html: '<div class="loader-pulse-ring"></div>' },
+            { id: 13, name: 'Pulse Square', type: 'pulse', html: '<div class="loader-pulse-square"></div>' },
+            { id: 14, name: 'Heartbeat', type: 'pulse', html: '<div class="loader-heartbeat"></div>' },
+            { id: 15, name: 'Breath', type: 'pulse', html: '<div class="loader-breath"></div>' },
+            { id: 16, name: 'Ripple', type: 'pulse', html: '<div class="loader-ripple"></div>' },
+            { id: 17, name: 'Sonar', type: 'pulse', html: '<div class="loader-sonar"></div>' },
+            { id: 18, name: 'Ping', type: 'pulse', html: '<div class="loader-ping"></div>' },
+            { id: 19, name: 'Radar', type: 'pulse', html: '<div class="loader-radar"></div>' },
+            { id: 20, name: 'Target', type: 'pulse', html: '<div class="loader-target"></div>' },
+            
+            // Bouncing Loaders
+            { id: 21, name: 'Bounce Ball', type: 'bounce', html: '<div class="loader-bounce-ball"></div>' },
+            { id: 22, name: 'Three Balls', type: 'bounce', html: '<div class="loader-three-balls"></div>' },
+            { id: 23, name: 'Wave Balls', type: 'bounce', html: '<div class="loader-wave-balls"></div>' },
+            { id: 24, name: 'Bounce Square', type: 'bounce', html: '<div class="loader-bounce-square"></div>' },
+            { id: 25, name: 'Jumping Dots', type: 'bounce', html: '<div class="loader-jumping-dots"></div>' },
+            { id: 26, name: 'Basketball', type: 'bounce', html: '<div class="loader-basketball"></div>' },
+            { id: 27, name: 'Trampoline', type: 'bounce', html: '<div class="loader-trampoline"></div>' },
+            { id: 28, name: 'Yo-yo', type: 'bounce', html: '<div class="loader-yoyo"></div>' },
+            { id: 29, name: 'Pogo', type: 'bounce', html: '<div class="loader-pogo"></div>' },
+            { id: 30, name: 'Spring', type: 'bounce', html: '<div class="loader-spring"></div>' },
+            
+            // Sliding Loaders
+            { id: 31, name: 'Slide Bar', type: 'slide', html: '<div class="loader-slide-bar"></div>' },
+            { id: 32, name: 'Progress Bar', type: 'slide', html: '<div class="loader-progress"></div>' },
+            { id: 33, name: 'Scan Line', type: 'slide', html: '<div class="loader-scan-line"></div>' },
+            { id: 34, name: 'Conveyor', type: 'slide', html: '<div class="loader-conveyor"></div>' },
+            { id: 35, name: 'Train', type: 'slide', html: '<div class="loader-train"></div>' },
+            { id: 36, name: 'Slider', type: 'slide', html: '<div class="loader-slider"></div>' },
+            { id: 37, name: 'Runner', type: 'slide', html: '<div class="loader-runner"></div>' },
+            { id: 38, name: 'Swoosh', type: 'slide', html: '<div class="loader-swoosh"></div>' },
+            { id: 39, name: 'Arrow', type: 'slide', html: '<div class="loader-arrow"></div>' },
+            { id: 40, name: 'Comet', type: 'slide', html: '<div class="loader-comet"></div>' },
+            
+            // Morphing Loaders
+            { id: 41, name: 'Morph Shape', type: 'morph', html: '<div class="loader-morph"></div>' },
+            { id: 42, name: 'Blob', type: 'morph', html: '<div class="loader-blob"></div>' },
+            { id: 43, name: 'Liquid', type: 'morph', html: '<div class="loader-liquid"></div>' },
+            { id: 44, name: 'Amoeba', type: 'morph', html: '<div class="loader-amoeba"></div>' },
+            { id: 45, name: 'Plasma', type: 'morph', html: '<div class="loader-plasma"></div>' },
+            { id: 46, name: 'Jellyfish', type: 'morph', html: '<div class="loader-jellyfish"></div>' },
+            { id: 47, name: 'Water Drop', type: 'morph', html: '<div class="loader-water-drop"></div>' },
+            { id: 48, name: 'Lava', type: 'morph', html: '<div class="loader-lava"></div>' },
+            { id: 49, name: 'Metamorph', type: 'morph', html: '<div class="loader-metamorph"></div>' },
+            { id: 50, name: 'Shape Shift', type: 'morph', html: '<div class="loader-shape-shift"></div>' },
+            
+            // Additional 50 loaders
+            { id: 51, name: 'Orbit', type: 'spin', html: '<div class="loader-orbit"></div>' },
+            { id: 52, name: 'Satellite', type: 'spin', html: '<div class="loader-satellite"></div>' },
+            { id: 53, name: 'Planet', type: 'spin', html: '<div class="loader-planet"></div>' },
+            { id: 54, name: 'Solar System', type: 'spin', html: '<div class="loader-solar"></div>' },
+            { id: 55, name: 'Atom', type: 'spin', html: '<div class="loader-atom"></div>' },
+            { id: 56, name: 'Molecule', type: 'spin', html: '<div class="loader-molecule"></div>' },
+            { id: 57, name: 'DNA Helix', type: 'spin', html: '<div class="loader-dna"></div>' },
+            { id: 58, name: 'Spiral', type: 'spin', html: '<div class="loader-spiral"></div>' },
+            { id: 59, name: 'Tornado', type: 'spin', html: '<div class="loader-tornado"></div>' },
+            { id: 60, name: 'Whirlpool', type: 'spin', html: '<div class="loader-whirlpool"></div>' },
+            { id: 61, name: 'Fan', type: 'spin', html: '<div class="loader-fan"></div>' },
+            { id: 62, name: 'Windmill', type: 'spin', html: '<div class="loader-windmill"></div>' },
+            { id: 63, name: 'Turbine', type: 'spin', html: '<div class="loader-turbine"></div>' },
+            { id: 64, name: 'Compass', type: 'spin', html: '<div class="loader-compass"></div>' },
+            { id: 65, name: 'Wheel', type: 'spin', html: '<div class="loader-wheel"></div>' },
+            { id: 66, name: 'Cog', type: 'spin', html: '<div class="loader-cog"></div>' },
+            { id: 67, name: 'Spinner', type: 'spin', html: '<div class="loader-spinner"></div>' },
+            { id: 68, name: 'Rotator', type: 'spin', html: '<div class="loader-rotator"></div>' },
+            { id: 69, name: 'Cycle', type: 'spin', html: '<div class="loader-cycle"></div>' },
+            { id: 70, name: 'Revolve', type: 'spin', html: '<div class="loader-revolve"></div>' },
+            { id: 71, name: 'Echo', type: 'pulse', html: '<div class="loader-echo"></div>' },
+            { id: 72, name: 'Vibrate', type: 'pulse', html: '<div class="loader-vibrate"></div>' },
+            { id: 73, name: 'Throb', type: 'pulse', html: '<div class="loader-throb"></div>' },
+            { id: 74, name: 'Beat', type: 'pulse', html: '<div class="loader-beat"></div>' },
+            { id: 75, name: 'Rhythm', type: 'pulse', html: '<div class="loader-rhythm"></div>' },
+            { id: 76, name: 'Tempo', type: 'pulse', html: '<div class="loader-tempo"></div>' },
+            { id: 77, name: 'Pulse Wave', type: 'pulse', html: '<div class="loader-pulse-wave"></div>' },
+            { id: 78, name: 'Signal', type: 'pulse', html: '<div class="loader-signal"></div>' },
+            { id: 79, name: 'Beacon', type: 'pulse', html: '<div class="loader-beacon"></div>' },
+            { id: 80, name: 'Flash', type: 'pulse', html: '<div class="loader-flash"></div>' },
+            { id: 81, name: 'Hop', type: 'bounce', html: '<div class="loader-hop"></div>' },
+            { id: 82, name: 'Skip', type: 'bounce', html: '<div class="loader-skip"></div>' },
+            { id: 83, name: 'Jump', type: 'bounce', html: '<div class="loader-jump"></div>' },
+            { id: 84, name: 'Leap', type: 'bounce', html: '<div class="loader-leap"></div>' },
+            { id: 85, name: 'Bound', type: 'bounce', html: '<div class="loader-bound"></div>' },
+            { id: 86, name: 'Elastic', type: 'bounce', html: '<div class="loader-elastic"></div>' },
+            { id: 87, name: 'Rubber', type: 'bounce', html: '<div class="loader-rubber"></div>' },
+            { id: 88, name: 'Bounce Back', type: 'bounce', html: '<div class="loader-bounce-back"></div>' },
+            { id: 89, name: 'Rebound', type: 'bounce', html: '<div class="loader-rebound"></div>' },
+            { id: 90, name: 'Spring Back', type: 'bounce', html: '<div class="loader-spring-back"></div>' },
+            { id: 91, name: 'Glide', type: 'slide', html: '<div class="loader-glide"></div>' },
+            { id: 92, name: 'Flow', type: 'slide', html: '<div class="loader-flow"></div>' },
+            { id: 93, name: 'Stream', type: 'slide', html: '<div class="loader-stream"></div>' },
+            { id: 94, name: 'Current', type: 'slide', html: '<div class="loader-current"></div>' },
+            { id: 95, name: 'Drift', type: 'slide', html: '<div class="loader-drift"></div>' },
+            { id: 96, name: 'Cruise', type: 'slide', html: '<div class="loader-cruise"></div>' },
+            { id: 97, name: 'Sail', type: 'slide', html: '<div class="loader-sail"></div>' },
+            { id: 98, name: 'Surf', type: 'slide', html: '<div class="loader-surf"></div>' },
+            { id: 99, name: 'Wave Motion', type: 'slide', html: '<div class="loader-wave-motion"></div>' },
+            { id: 100, name: 'Fluid', type: 'slide', html: '<div class="loader-fluid"></div>' }
+        ];
+
+        let currentSettings = {
+            size: 40,
+            speed: 1,
+            color: 'gray-900',
+            filter: ''
+        };
+
+        let selectedLoader = null;
+        let activeCodeTab = 'html';
+
+        // Initialize the app
+        function init() {
+            renderLoaders();
+            setupEventListeners();
+        }
+
+        function renderLoaders() {
+            const grid = document.getElementById('loaderGrid');
+            const filteredLoaders = currentSettings.filter 
+                ? loaderConfigs.filter(loader => loader.type === currentSettings.filter)
+                : loaderConfigs;
+
+            grid.innerHTML = filteredLoaders.map(loader => `
+                <div class="loader-card bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow cursor-pointer" data-loader-id="${loader.id}">
+                    <div class="flex flex-col items-center">
+                        <div class="mb-3 flex items-center justify-center h-16">
+                            ${generateLoaderHTML(loader)}
+                        </div>
+                        <h3 class="text-sm font-medium text-center">${loader.name}</h3>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">${loader.type}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click listeners to loader cards
+            document.querySelectorAll('.loader-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const loaderId = parseInt(card.dataset.loaderId);
+                    selectLoader(loaderId);
+                });
+            });
+        }
+
+        function generateLoaderHTML(loader) {
+            const size = currentSettings.size;
+            const speed = currentSettings.speed;
+            const color = currentSettings.color;
+            
+            // Generate different loader patterns based on ID
+            const patterns = [
+                // Ring patterns
+                () => `<div class="w-${Math.floor(size/4)} h-${Math.floor(size/4)} border-2 border-${color} border-t-transparent rounded-full animate-spin" style="animation-duration: ${2/speed}s;"></div>`,
+                () => `<div class="w-${Math.floor(size/4)} h-${Math.floor(size/4)} border-2 border-dashed border-${color} rounded-full animate-spin" style="animation-duration: ${1.5/speed}s;"></div>`,
+                () => `<div class="w-${Math.floor(size/4)} h-${Math.floor(size/4)} border-4 border-${color} border-r-transparent border-b-transparent rounded-full animate-spin" style="animation-duration: ${1/speed}s;"></div>`,
+                
+                // Pulse patterns
+                () => `<div class="w-${Math.floor(size/6)} h-${Math.floor(size/6)} bg-${color} rounded-full animate-pulse" style="animation-duration: ${2/speed}s;"></div>`,
+                () => `<div class="w-${Math.floor(size/4)} h-${Math.floor(size/4)} border-2 border-${color} rounded-full animate-ping" style="animation-duration: ${1.5/speed}s;"></div>`,
+                
+                // Bounce patterns
+                () => `<div class="w-${Math.floor(size/6)} h-${Math.floor(size/6)} bg-${color} rounded-full animate-bounce" style="animation-duration: ${1/speed}s;"></div>`,
+                () => `<div class="flex space-x-1">
+                    <div class="w-${Math.floor(size/8)} h-${Math.floor(size/8)} bg-${color} rounded-full animate-bounce" style="animation-delay: 0s; animation-duration: ${1.4/speed}s;"></div>
+                    <div class="w-${Math.floor(size/8)} h-${Math.floor(size/8)} bg-${color} rounded-full animate-bounce" style="animation-delay: 0.2s; animation-duration: ${1.4/speed}s;"></div>
+                    <div class="w-${Math.floor(size/8)} h-${Math.floor(size/8)} bg-${color} rounded-full animate-bounce" style="animation-delay: 0.4s; animation-duration: ${1.4/speed}s;"></div>
+                </div>`,
+                
+                // Morphing patterns
+                () => `<div class="w-${Math.floor(size/4)} h-${Math.floor(size/4)} bg-${color} animate-ping rounded-full" style="animation-duration: ${2/speed}s;"></div>`,
+                () => `<div class="w-${Math.floor(size/4)} h-${Math.floor(size/4)} bg-${color} rounded-lg animate-spin" style="animation-duration: ${1.5/speed}s;"></div>`,
+                
+                // Sliding patterns
+                () => `<div class="relative w-${Math.floor(size/3)} h-${Math.floor(size/8)} bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                    <div class="absolute left-0 top-0 w-${Math.floor(size/6)} h-full bg-${color} rounded-full animate-ping" style="animation-duration: ${2/speed}s;"></div>
+                </div>`
+            ];
+            
+            const patternIndex = (loader.id - 1) % patterns.length;
+            return patterns[patternIndex]();
+        }
+
+        function selectLoader(loaderId) {
+            selectedLoader = loaderConfigs.find(l => l.id === loaderId);
+            if (!selectedLoader) return;
+
+            // Update preview
+            const previewSection = document.getElementById('previewSection');
+            const selectedLoaderDiv = document.getElementById('selectedLoader');
+            
+            previewSection.classList.remove('hidden');
+            selectedLoaderDiv.innerHTML = generateLoaderHTML(selectedLoader);
+            
+            updateCodeOutput();
+            
+            // Scroll to preview
+            previewSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateCodeOutput() {
+            if (!selectedLoader) return;
+            
+            const codeOutput = document.getElementById('codeOutput');
+            const size = currentSettings.size;
+            const speed = currentSettings.speed;
+            const color = currentSettings.color;
+            
+            if (activeCodeTab === 'html') {
+                codeOutput.textContent = `<!-- ${selectedLoader.name} -->
+<div class="loader-${selectedLoader.id}">
+    ${generateLoaderHTML(selectedLoader)}
+</div>
+
+<style>
+.loader-${selectedLoader.id} {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: ${size}px;
+    height: ${size}px;
+}
+
+/* Animation speed: ${speed}x */
+/* Color: ${color} */
+/* Type: ${selectedLoader.type} */
+</style>`;
+            } else if (activeCodeTab === 'react') {
+                codeOutput.textContent = `import React from 'react';
+
+const ${selectedLoader.name.replace(/\s+/g, '')}Loader = ({ 
+    size = ${size}, 
+    speed = ${speed}, 
+    color = "${color}" 
+}) => {
+    return (
+        <div 
+            className="flex justify-center items-center"
+            style={{ width: size, height: size }}
+        >
+            ${generateLoaderHTML(selectedLoader).replace(/"/g, "'")}
+        </div>
+    );
+};
+
+export default ${selectedLoader.name.replace(/\s+/g, '')}Loader;`;
+            } else if (activeCodeTab === 'java') {
+                codeOutput.textContent = `// ${selectedLoader.name} - Java Swing Implementation
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class ${selectedLoader.name.replace(/\s+/g, '')}Loader extends JPanel {
+    private Timer timer;
+    private int angle = 0;
+    private int size = ${size};
+    private Color color = Color.${color.toUpperCase().includes('WHITE') ? 'WHITE' : 'BLACK'};
+    private double speed = ${speed};
+    
+    public ${selectedLoader.name.replace(/\s+/g, '')}Loader() {
+        setPreferredSize(new Dimension(size, size));
+        setOpaque(false);
+        
+        timer = new Timer((int)(20 / speed), new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                angle += 5;
+                if (angle >= 360) angle = 0;
+                repaint();
+            }
+        });
+        timer.start();
+    }
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                            RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
+        
+        // ${selectedLoader.type} animation
+        g2d.setColor(color);
+        g2d.rotate(Math.toRadians(angle), centerX, centerY);
+        g2d.drawOval(centerX - size/4, centerY - size/4, size/2, size/2);
+        
+        g2d.dispose();
+    }
+    
+    public void setLoaderSize(int size) { this.size = size; }
+    public void setLoaderColor(Color color) { this.color = color; }
+    public void setSpeed(double speed) { 
+        this.speed = speed;
+        timer.setDelay((int)(20 / speed));
+    }
+}`;
+            }
+        }
+
+        function setupEventListeners() {
+            // Size control
+            const sizeControl = document.getElementById('sizeControl');
+            const sizeValue = document.getElementById('sizeValue');
+            sizeControl.addEventListener('input', (e) => {
+                currentSettings.size = parseInt(e.target.value);
+                sizeValue.textContent = currentSettings.size + 'px';
+                renderLoaders();
+                if (selectedLoader) updateCodeOutput();
+            });
+
+            // Speed control
+            const speedControl = document.getElementById('speedControl');
+            const speedValue = document.getElementById('speedValue');
+            speedControl.addEventListener('input', (e) => {
+                currentSettings.speed = parseFloat(e.target.value);
+                speedValue.textContent = currentSettings.speed + 'x';
+                renderLoaders();
+                if (selectedLoader) updateCodeOutput();
+            });
+
+            // Color control
+            const colorControl = document.getElementById('colorControl');
+            colorControl.addEventListener('change', (e) => {
+                currentSettings.color = e.target.value;
+                renderLoaders();
+                if (selectedLoader) updateCodeOutput();
+            });
+
+            // Filter control
+            const filterControl = document.getElementById('filterControl');
+            filterControl.addEventListener('change', (e) => {
+                currentSettings.filter = e.target.value;
+                renderLoaders();
+            });
+
+            // Code tabs
+            document.querySelectorAll('.code-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    document.querySelectorAll('.code-tab').forEach(t => {
+                        t.classList.remove('border-gray-900', 'dark:border-white');
+                        t.classList.add('border-transparent');
+                    });
+                    e.target.classList.add('border-gray-900', 'dark:border-white');
+                    e.target.classList.remove('border-transparent');
+                    
+                    activeCodeTab = e.target.dataset.tab;
+                    if (selectedLoader) updateCodeOutput();
+                });
+            });
+
+            // Copy code
+            document.getElementById('copyCode').addEventListener('click', () => {
+                const codeOutput = document.getElementById('codeOutput');
+                navigator.clipboard.writeText(codeOutput.textContent).then(() => {
+                    const button = document.getElementById('copyCode');
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                    }, 2000);
+                });
+            });
+
+            // Add loader
+            document.getElementById('addLoader').addEventListener('click', () => {
+                const newId = Math.max(...loaderConfigs.map(l => l.id)) + 1;
+                const types = ['spin', 'pulse', 'bounce', 'slide', 'morph'];
+                const randomType = types[Math.floor(Math.random() * types.length)];
+                
+                const newLoader = {
+                    id: newId,
+                    name: `Custom Loader ${newId}`,
+                    type: randomType,
+                    html: `<div class="loader-custom-${newId}"></div>`
+                };
+                
+                loaderConfigs.push(newLoader);
+                renderLoaders();
+                
+                // Auto-select the new loader
+                selectLoader(newId);
+            });
+        }
+
+        // Initialize the application
+        init();
+    </script>
+</body>
+</html>
